@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#081227" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="入眠之境" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>入眠之境</title>
+  <style>
+    :root {
+      --bg-top: #091a36;
+      --bg-bottom: #030a17;
+      --text: #e8f1ff;
+      --muted: #9cb0cf;
+      --accent: #8fc6ff;
+      --ball-size: 160px;
+      --panel: rgba(10, 20, 38, 0.56);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: calc(16px + var(--safe-top)) 14px calc(20px + var(--safe-bottom));
+      position: relative;
+    }
+
+    .stars, .stars::before, .stars::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-repeat: repeat;
+      background-size: 260px 260px;
+    }
+
+    .stars {
+      background-image: radial-gradient(2px 2px at 20px 40px, rgba(255,255,255,.8), transparent),
+        radial-gradient(1.5px 1.5px at 140px 80px, rgba(255,255,255,.66), transparent),
+        radial-gradient(1.2px 1.2px at 90px 190px, rgba(173,220,255,.56), transparent);
+      animation: twinkle 8s linear infinite;
+      opacity: .7;
+    }
+
+    .stars::before { opacity: .32; filter: blur(0.6px); }
+    .stars::after { opacity: .18; filter: blur(1px); }
+
+    @keyframes twinkle {
+      0%,100% { opacity: .52; }
+      50% { opacity: .85; }
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 14px;
+    }
+
+    .title { text-align: center; font-size: 30px; font-weight: 700; letter-spacing: 2px; margin: 6px 0 0; }
+
+    .hint {
+      background: rgba(21, 38, 66, .75);
+      border: 1px solid rgba(148, 187, 239, .35);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: #d8e8ff;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .breath-wrap { display: grid; justify-items: center; gap: 8px; margin-top: 6px; }
+
+    .breath-ball {
+      width: var(--ball-size);
+      height: var(--ball-size);
+      border-radius: 50%;
+      border: 1px solid rgba(181, 226, 255, .65);
+      background: radial-gradient(circle at 35% 30%, rgba(184,236,255,.95), rgba(69,141,216,.55) 48%, rgba(20,70,134,.35) 70%, rgba(4,18,40,.2));
+      box-shadow: 0 0 28px rgba(131, 196, 255, .3), inset 0 0 30px rgba(186, 233, 255, .38);
+      display: grid;
+      place-items: center;
+      color: #f4fbff;
+      text-shadow: 0 0 8px rgba(183, 225, 255, .8);
+      transition: transform .7s ease, box-shadow .8s ease;
+      transform: scale(0.95);
+      user-select: none;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+
+    .count { font-size: 48px; font-weight: 700; line-height: 1; }
+    .phase { font-size: 18px; color: #d5e6ff; min-height: 28px; }
+    .guide { font-size: 20px; color: #cce3ff; min-height: 30px; }
+
+    .controls {
+      background: var(--panel);
+      border: 1px solid rgba(173, 202, 243, .25);
+      border-radius: 14px;
+      padding: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    .row { display: grid; gap: 6px; margin-bottom: 10px; }
+    .row:last-child { margin-bottom: 0; }
+    label { font-size: 15px; color: #d7e7ff; }
+    select, input[type="range"], button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid rgba(146, 186, 236, .38);
+      background: rgba(16, 33, 58, .74);
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    select, button { min-height: 48px; padding: 0 12px; }
+    input[type="range"] { min-height: 36px; }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .start {
+      background: linear-gradient(180deg, #84c8ff, #4b98e8);
+      color: #062349;
+      font-weight: 700;
+      border: none;
+      box-shadow: 0 6px 18px rgba(87, 155, 220, .48);
+      touch-action: manipulation;
+    }
+
+    .footer {
+      margin-top: 4px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+      text-align: center;
+      padding: 2px 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+  <main class="app">
+    <h1 class="title">入眠之境</h1>
+    <div id="installHint" class="hint" hidden></div>
+
+    <section class="breath-wrap">
+      <button id="breathBall" class="breath-ball" aria-label="呼吸球">
+        <span id="countdown" class="count">4</span>
+      </button>
+      <div id="phaseText" class="phase">轻触呼吸球开始</div>
+      <div id="guideText" class="guide">放松身体</div>
+    </section>
+
+    <section class="controls">
+      <div class="row">
+        <label for="natureSelect">自然环境音</label>
+        <select id="natureSelect">
+          <option value="rain">雨声</option>
+          <option value="ocean">海浪</option>
+          <option value="forest">森林声</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="natureVol">自然音量</label>
+        <input id="natureVol" type="range" min="0" max="1" step="0.01" value="0.38" />
+      </div>
+      <div class="row">
+        <label for="thetaVol">Theta 音量</label>
+        <input id="thetaVol" type="range" min="0" max="1" step="0.01" value="0.16" />
+      </div>
+      <div class="row">
+        <label for="medVol">冥想音量</label>
+        <input id="medVol" type="range" min="0" max="1" step="0.01" value="0.22" />
+      </div>
+      <div class="toggle">
+        <label for="narrationToggle">语音旁白</label>
+        <input id="narrationToggle" type="checkbox" />
+      </div>
+      <button id="startBtn" class="start">开始入眠</button>
+    </section>
+
+    <p class="footer">本工具仅用于睡前放松，不提供医学诊断或治疗建议。</p>
+  </main>
+
+  <script>
+    (() => {
+      // 页面主逻辑：呼吸训练、安装提示、音频合成与本地偏好保存
+      const els = {
+        ball: document.getElementById('breathBall'), count: document.getElementById('countdown'),
+        phase: document.getElementById('phaseText'), guide: document.getElementById('guideText'),
+        start: document.getElementById('startBtn'), nature: document.getElementById('natureSelect'),
+        natureVol: document.getElementById('natureVol'), thetaVol: document.getElementById('thetaVol'),
+        medVol: document.getElementById('medVol'), narration: document.getElementById('narrationToggle'),
+        hint: document.getElementById('installHint')
+      };
+      const KEY = 'sleep_realm_v1';
+      const state = { started: false, timer: null, audio: null, nodes: {}, patternCount: 0 };
+
+      function save() {
+        localStorage.setItem(KEY, JSON.stringify({ n: els.nature.value, nv: els.natureVol.value, tv: els.thetaVol.value, mv: els.medVol.value }));
+      }
+      function load() {
+        try {
+          const p = JSON.parse(localStorage.getItem(KEY) || '{}');
+          if (p.n) els.nature.value = p.n;
+          if (p.nv) els.natureVol.value = p.nv;
+          if (p.tv) els.thetaVol.value = p.tv;
+          if (p.mv) els.medVol.value = p.mv;
+        } catch (_) {}
+      }
+
+      // 根据平台显示安装到主屏幕提示
+      function showInstallHint() {
+        const ua = navigator.userAgent || '';
+        const ios = /iPhone|iPad|iPod/i.test(ua);
+        const android = /Android/i.test(ua);
+        const hasMatchMedia = typeof window.matchMedia === 'function';
+        const standalone = window.navigator.standalone === true || (hasMatchMedia && window.matchMedia('(display-mode: standalone)').matches);
+        if (ios && !standalone) {
+          els.hint.hidden = false;
+          els.hint.textContent = '下载安装到手机桌面：Safari 打开本页 → 分享 → 添加到主屏幕。';
+        } else if (android) {
+          els.hint.hidden = false;
+          els.hint.textContent = 'Android 用户可通过 Chrome 菜单添加到主屏幕。';
+        }
+      }
+
+      // 生成循环白噪声缓冲区，作为雨声/海浪/森林声的基础信号
+      function noiseBuffer(ctx, seconds = 2) {
+        const buffer = ctx.createBuffer(1, seconds * ctx.sampleRate, ctx.sampleRate);
+        const d = buffer.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        return buffer;
+      }
+
+      // 用户手势后启动音频图（iOS Safari 要求）
+      function startAudio() {
+        if (state.audio) return;
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        state.audio = ctx;
+        const master = ctx.createGain(); master.gain.value = 0.85; master.connect(ctx.destination);
+        const natureGain = ctx.createGain(); const thetaGain = ctx.createGain(); const medGain = ctx.createGain();
+        natureGain.connect(master); thetaGain.connect(master); medGain.connect(master);
+
+        const nsrc = ctx.createBufferSource(); nsrc.buffer = noiseBuffer(ctx); nsrc.loop = true;
+        const rainLP = ctx.createBiquadFilter(); rainLP.type = 'lowpass'; rainLP.frequency.value = 1400;
+        const oceanBP = ctx.createBiquadFilter(); oceanBP.type = 'bandpass'; oceanBP.frequency.value = 430; oceanBP.Q.value = 0.6;
+        const forestHP = ctx.createBiquadFilter(); forestHP.type = 'highpass'; forestHP.frequency.value = 1200;
+        const rainGain = ctx.createGain(); const oceanGain = ctx.createGain(); const forestGain = ctx.createGain();
+        nsrc.connect(rainLP); nsrc.connect(oceanBP); nsrc.connect(forestHP);
+        rainLP.connect(rainGain).connect(natureGain);
+        oceanBP.connect(oceanGain).connect(natureGain);
+        forestHP.connect(forestGain).connect(natureGain);
+
+        const lOsc = ctx.createOscillator(); const rOsc = ctx.createOscillator();
+        lOsc.type = 'sine'; rOsc.type = 'sine'; lOsc.frequency.value = 210; rOsc.frequency.value = 216;
+        const merger = ctx.createChannelMerger(2);
+        const lg = ctx.createGain(); const rg = ctx.createGain(); lg.gain.value = 0.45; rg.gain.value = 0.45;
+        lOsc.connect(lg).connect(merger, 0, 0); rOsc.connect(rg).connect(merger, 0, 1);
+        merger.connect(thetaGain);
+
+        const medOsc = ctx.createOscillator(); medOsc.type = 'triangle'; medOsc.frequency.value = 72;
+        const medLfo = ctx.createOscillator(); medLfo.type = 'sine'; medLfo.frequency.value = 0.08;
+        const medLfoGain = ctx.createGain(); medLfoGain.gain.value = 18;
+        medLfo.connect(medLfoGain).connect(medOsc.frequency); medOsc.connect(medGain);
+
+        state.nodes = { master, natureGain, thetaGain, medGain, rainGain, oceanGain, forestGain };
+        nsrc.start(); lOsc.start(); rOsc.start(); medOsc.start(); medLfo.start();
+        updateSoundType(); updateVolumes();
+      }
+
+      // 切换自然环境声类型
+      function updateSoundType() {
+        const type = els.nature.value;
+        if (state.nodes.rainGain) {
+          state.nodes.rainGain.gain.value = type === 'rain' ? 1 : 0;
+          state.nodes.oceanGain.gain.value = type === 'ocean' ? 1 : 0;
+          state.nodes.forestGain.gain.value = type === 'forest' ? 1 : 0;
+        }
+        save();
+      }
+
+      // 更新三组音量并持久化
+      function updateVolumes() {
+        if (state.nodes.natureGain) {
+          state.nodes.natureGain.gain.value = parseFloat(els.natureVol.value);
+          state.nodes.thetaGain.gain.value = parseFloat(els.thetaVol.value);
+          state.nodes.medGain.gain.value = parseFloat(els.medVol.value);
+        }
+        save();
+      }
+
+      // 语音旁白：不支持时静默降级
+      function speak(text) {
+        if (!els.narration.checked || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'zh-CN'; u.rate = 0.86; u.pitch = 1.0; u.volume = 0.7;
+        window.speechSynthesis.speak(u);
+      }
+
+      const guideStages = ['放松身体', '平静心念', '深度放松', '进入睡眠'];
+      const pattern1 = [['吸气',4,1.2],['屏息',7,1.2],['呼气',8,0.9]];
+      const pattern2 = [['吸气',5,1.15],['呼气',6,0.92]];
+
+      // 递归推进呼吸周期并更新倒计时与球体动画
+      function nextCycle() {
+        const pattern = state.patternCount < 3 ? pattern1 : pattern2;
+        state.patternCount += 1;
+        const guide = guideStages[Math.min(guideStages.length - 1, Math.floor(state.patternCount / 3))];
+        els.guide.textContent = guide;
+        speak(guide);
+        let offset = 0;
+        pattern.forEach(([text, sec, scale]) => {
+          for (let i = sec; i > 0; i--) {
+            const when = offset + (sec - i) * 1000;
+            setTimeout(() => {
+              els.phase.textContent = text;
+              els.count.textContent = String(i);
+              els.ball.style.transform = `scale(${scale})`;
+              els.ball.style.boxShadow = text === '呼气' ? '0 0 18px rgba(131,196,255,.18)' : '0 0 32px rgba(131,196,255,.38)';
+            }, when);
+          }
+          offset += sec * 1000;
+        });
+        state.timer = setTimeout(nextCycle, offset);
+      }
+
+      // 启动入眠流程（仅允许第一次点击触发）
+      function start() {
+        if (state.started) return;
+        state.started = true;
+        startAudio();
+        if (state.audio && state.audio.state === 'suspended') state.audio.resume();
+        els.phase.textContent = '准备开始';
+        els.start.textContent = '已开始，请跟随呼吸';
+        nextCycle();
+      }
+
+      [els.nature, els.natureVol, els.thetaVol, els.medVol].forEach(el => {
+        el.addEventListener('change', () => { updateSoundType(); updateVolumes(); });
+        el.addEventListener('input', updateVolumes);
+      });
+      els.start.addEventListener('click', start);
+      els.ball.addEventListener('click', start);
+
+      load();
+      // 首次加载时同步选择项与音量（即使尚未开始播放）
+      updateSoundType();
+      updateVolumes();
+      showInstallHint();
+
+      // 若浏览器不支持旁白，禁用开关避免误解
+      if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+        els.narration.checked = false;
+        els.narration.disabled = true;
+      }
+    })();
+  </script>
+</body>
+</html>
